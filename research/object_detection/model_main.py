@@ -22,6 +22,8 @@ from absl import flags
 
 import tensorflow as tf
 
+from tensorflow.core.protobuf import config_pb2
+
 from object_detection import model_hparams
 from object_detection import model_lib
 
@@ -55,11 +57,15 @@ flags.DEFINE_boolean(
 )
 FLAGS = flags.FLAGS
 
+fix_config = config_pb2.ConfigProto()
+fix_config.gpu_options.allow_growth = True
 
 def main(unused_argv):
   flags.mark_flag_as_required('model_dir')
   flags.mark_flag_as_required('pipeline_config_path')
-  config = tf.estimator.RunConfig(model_dir=FLAGS.model_dir)
+  config = tf.estimator.RunConfig(model_dir=FLAGS.model_dir, 
+                                  session_config=fix_config, # solve the problem with RTX
+                                  keep_checkpoint_max=500 ) # keep 500 checkpoints
 
   train_and_eval_dict = model_lib.create_estimator_and_inputs(
       run_config=config,
