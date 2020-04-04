@@ -37,6 +37,11 @@ from object_detection.utils import shape_utils
 from object_detection.utils import variables_helper
 from object_detection.utils import visualization_utils as vis_utils
 
+# number of checkpoints to keep
+# it works with keep_checkpoint_max (tf.estimator.RunConfig in model_main.py)
+# https://github.com/tensorflow/models/issues/6439#issuecomment-490659254
+MAX2KEEP=50
+
 # A map of names to methods that help build the model.
 MODEL_BUILD_UTIL_MAP = {
     'get_configs_from_pipeline_file':
@@ -431,6 +436,7 @@ def create_model_fn(detection_model_fn, configs, hparams, use_tpu=False):
             train_config.keep_checkpoint_every_n_hours)
         saver = tf.train.Saver(
             variables_to_restore,
+            max_to_keep=MAX2KEEP,
             keep_checkpoint_every_n_hours=keep_checkpoint_every_n_hours)
         scaffold = tf.train.Scaffold(saver=saver)
 
